@@ -1,5 +1,5 @@
 # AndroidSecurityCam
-Do you have an old Android phone collecting dust? Turn it into a personal home security camera! You can monitor your home from a distance and even detect motion! In this repo is a Python script to help you with that.
+Do you have an old Android phone collecting dust? Turn it into a personal home security camera! You can monitor your home from a distance and even detect motion! In this repo is a Python script or C++ application to help you with that.
 
 # Hardware
 Blu View 5 - 64GB ($30 new)<br>
