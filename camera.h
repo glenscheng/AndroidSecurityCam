@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <opencv2/opencv.hpp>
 #include <filesystem>
+#include <chrono>
 
 
 namespace fs = std::__fs::filesystem;
@@ -19,6 +20,10 @@ namespace fs = std::__fs::filesystem;
 class Camera {
     private:
         std::string phone_ip_port;
+        cv::Mat frame;
+        double last_mean = 0;
+        double motion_threshold = 3.0;
+        std::chrono::time_point<std::chrono::steady_clock> last_time = std::chrono::steady_clock::now();
 
     public:
         /**
@@ -71,6 +76,16 @@ class Camera {
          *  The folder where the image is stored
          */
         void display_image(const std::string& folder);
+
+        /**
+         * @brief Store image when motion is detected.
+         * 
+         * @param from_path
+         *  The path to image's source folder on the Android phone
+         * @param to_path
+         *  The path to image's destination folder on computer
+         */
+        void detect_motion(const std::string& from_path, const std::string& to_path);
 
         /**
          * @brief Start streaming video to computer.

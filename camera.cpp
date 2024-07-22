@@ -17,6 +17,7 @@ Camera::Camera(std::string ip) {
         std::cout << "Error connecting to phone over Wi-Fi" << std::endl;
         exit(1);
     }
+    // delete old photos to open up memory space
     sleep(1);
 }
 
@@ -72,6 +73,7 @@ void Camera::display_image(const std::string& folder) {
     for (const auto& entry : fs::directory_iterator(folder)) {
         if (entry.path().extension() == ".jpg") {
             cv::Mat img = cv::imread(entry.path().string());
+            frame = img;
             if (img.empty()) {
                 std::cout << "Error displaying image on computer" << std::endl;
                 return;
@@ -83,13 +85,32 @@ void Camera::display_image(const std::string& folder) {
     }
 }
 
+void Camera::detect_motion(const std::string& from_path, const std::string& to_path) {
+    cv::Mat gray;
+    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY); // Convert to grayscale
+    double curr_mean = cv::mean(gray)[0]; // Calculate mean of image
+    double mean_diff = std::abs(curr_mean - last_mean); // Compare means
+
+    std::chrono::time_point<std::chrono::steady_clock> curr_time = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsed_seconds = curr_time - last_time;
+    if (elapsed_seconds.count() > 60) { // Only save image every minute
+        if (mean_diff > motion_threshold) {
+            last_time = std::chrono::steady_clock::now();
+            transfer_image(from_path, to_path);
+        }
+    }
+
+    last_mean = curr_mean;
+}
+
 void Camera::stream() {
     open_camera_app();
     while (true) {
         take_picture();
-        clear_computer_folder("images/");
-        transfer_image("/sdcard/DCIM/Camera/", "images/");
-        display_image("images/");
+        clear_computer_folder("Images/");
+        transfer_image("/sdcard/DCIM/Camera/", "Images/");
+        display_image("Images/");
+        detect_motion("/sdcard/DCIM/Camera/", "Images/Motion/");
         if (cv::waitKey(1) == 'q') {
             cv::destroyAllWindows();
             break;
