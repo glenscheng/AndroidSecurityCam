@@ -17,11 +17,19 @@ namespace fs = std::__fs::filesystem;
 
 
 class Camera {
+    private:
+        std::string phone_ip_port;
+
     public:
+        /**
+         * @brief Start ADB server and connect to Android phone wirelessly over Wi-Fi.
+         */
+        Camera(std::string ip);
+
         /**
          * @brief Open camera app.
          */
-        Camera();
+        void open_camera_app();
 
         /**
          * @brief Take picture in camera app and process into saved photos.
@@ -71,12 +79,9 @@ class Camera {
         
 
         /**
-         * @brief Close video stream video. 
+         * @brief Kill ADB server. 
          */
         ~Camera();
-    
-    private:
-        /** None */
 };
 
 #endif

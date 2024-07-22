@@ -1,9 +1,27 @@
 #include "camera.h"
 
 
-// Open camera app
-Camera::Camera() {
-    if (system("adb shell am start -a android.media.action.IMAGE_CAPTURE") != 0) {
+// Establish connection between computer and Android phone
+Camera::Camera(std::string ip) {
+    phone_ip_port = ip;
+
+    if (system("adb start-server") != 0) {
+        std::cout << "Error starting server" << std::endl;
+        exit(1);
+    }
+    if (system("adb devices") != 0) {
+        std::cout << "Error displaying devices connected through ADB" << std::endl;
+        exit(1);
+    }
+    if (system(("adb connect " + phone_ip_port).c_str()) != 0) {
+        std::cout << "Error connecting to phone over Wi-Fi" << std::endl;
+        exit(1);
+    }
+    sleep(1);
+}
+
+void Camera::open_camera_app() {
+    if (system(("adb -s " + phone_ip_port + " shell am start -a android.media.action.IMAGE_CAPTURE").c_str()) != 0) {
         std::cout << "Error opening camera app" << std::endl;
         exit(1);
     }
@@ -11,7 +29,7 @@ Camera::Camera() {
 }
 
 void Camera::take_picture() {
-    if (system("adb shell input keyevent CAMERA") != 0) {
+    if (system(("adb -s " + phone_ip_port + " shell input keyevent CAMERA").c_str()) != 0) {
         std::cout << "Error taking picture" << std::endl;
         exit(1);
     }
@@ -42,9 +60,9 @@ std::string Camera::system_output(const char* cmd) {
 }
 
 void Camera::transfer_image(const std::string& from_path, const std::string& to_path) {
-    std::string most_recent = system_output(("adb shell ls -t " + from_path + " | head -n 1").c_str());
+    std::string most_recent = system_output(("adb -s " + phone_ip_port + " shell ls -t " + from_path + " | head -n 1").c_str());
     most_recent.erase(std::remove(most_recent.begin(), most_recent.end(), '\n'), most_recent.end());
-    if (system(("adb pull /sdcard/DCIM/Camera/" + most_recent + " " + to_path).c_str()) != 0) {
+    if (system(("adb -s " + phone_ip_port + " pull /sdcard/DCIM/Camera/" + most_recent + " " + to_path).c_str()) != 0) {
         std::cout << "Error transferring image from Android phone to computer" << std::endl;
         exit(1);
     }
@@ -66,6 +84,7 @@ void Camera::display_image(const std::string& folder) {
 }
 
 void Camera::stream() {
+    open_camera_app();
     while (true) {
         take_picture();
         clear_computer_folder("images/");
@@ -78,6 +97,10 @@ void Camera::stream() {
     }
 }
 
+// Kill the adb server
 Camera::~Camera() {
-    // Do nothing
+    if (system("adb kill-server") != 0) {
+        std::cout << "Error killing server" << std::endl;
+        exit(1);
+    }
 }
