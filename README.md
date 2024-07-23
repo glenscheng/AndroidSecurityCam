@@ -15,7 +15,7 @@ Blu View 5 - 64GB ($30 new)<br>
     - Pair Android and computer: https://youtu.be/_JjpbufTMew?si=aIq0UF8aaCMnPRDy]
 
 # Run program
-Warning: Out of the box, program clears Android phone's saved photos library on startup to save phone's memory.
+Warning: Out of the box, program clears Android phone's saved photos library on startup to save phone's memory.<br>
 1. 
 
 # Resources
