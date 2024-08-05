@@ -24,6 +24,9 @@ Camera::Camera(std::string _phone_ip_port, std::string _computer_folder, std::st
         std::cout << "Error displaying devices connected through ADB" << std::endl;
         exit(1);
     }
+    if (system(("adb -s " + phone_ip_port + " shell rm " + phone_folder + "*.jpg").c_str()) != 0) {
+        std::cout << "Android camera folder does not exist (yet)" << std::endl;
+    }
     sleep(1);
 }
 
@@ -77,6 +80,9 @@ void Camera::transfer_image(bool motion) {
 
     std::string most_recent = system_output(("adb -s " + phone_ip_port + " shell ls -t " + from_path + " | head -n 1").c_str());
     most_recent.erase(std::remove(most_recent.begin(), most_recent.end(), '\n'), most_recent.end());
+    if (most_recent == "") {
+        return;
+    }
     if (system(("adb -s " + phone_ip_port + " pull /sdcard/DCIM/Camera/" + most_recent + " " + to_path + " > /dev/null").c_str()) != 0) {
         std::cout << "Error transferring image from Android phone to computer" << std::endl;
         exit(1);
@@ -87,11 +93,11 @@ void Camera::display_image() {
     for (const auto& entry : fs::directory_iterator(computer_folder)) {
         if (entry.path().extension() == ".jpg") {
             cv::Mat img = cv::imread(entry.path().string());
-            frame = img;
             if (img.empty()) {
                 std::cout << "Error displaying image on computer" << std::endl;
                 return;
             }
+            frame = img;
             cv::imshow("Security Camera Feed", img);
             cv::waitKey(1);
             break;
@@ -100,6 +106,10 @@ void Camera::display_image() {
 }
 
 void Camera::detect_motion() {
+    if (frame.empty()) {
+        return;
+    }
+
     std::string from_path = phone_folder;
     std::string to_path = computer_folder_motion;
 
@@ -116,7 +126,6 @@ void Camera::detect_motion() {
             std::chrono::time_point<std::chrono::system_clock> real_time = std::chrono::system_clock::now();
             std::time_t real_time_t = std::chrono::system_clock::to_time_t(real_time);
             std::tm real_time_tm = *std::localtime(&real_time_t);
-
 
             std::cout << "Motion detected at time: " << std::put_time(&real_time_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
             last_time = std::chrono::steady_clock::now();
