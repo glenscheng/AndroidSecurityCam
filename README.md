@@ -16,7 +16,11 @@ Blu View 5 - 64GB ($30 new)<br>
 
 # Run program
 Warning: Out of the box, application clears Android phone's saved photos library on startup to save phone's memory.<br>
-1. 
+1. `make clean`
+2. `make`
+3. `./camera <phone_ip_address>:<phone_port> <path to computer folder for temp images> <path to computer folder for motion images> <path to phone saved images folder>"`<br><br>
+For example: `./camera 192.168.0.188:40427 Images/ Images/Motion/ /sdcard/DCIM/Camera/`<br><br>
+4. Leave Android phone camera pointed where you want to monitor.
 
 # Resources
 - https://youtu.be/uOPcUjVl2YQ?si=ZE6an89KVADLmNJ2
